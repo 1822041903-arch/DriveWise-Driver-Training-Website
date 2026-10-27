@@ -1,0 +1,20 @@
+stateDiagram-v2
+  direction LR
+  state "Chờ xác nhận (pending)" as pending
+  state "Đã duyệt (approved)" as approved
+  state "Đang học (in-progress)" as in_progress
+  state "Hoàn thành (completed)" as completed
+  state "Đã hủy (cancelled)" as cancelled
+  [*] --> pending: Học viên gửi hồ sơ
+  pending --> approved: Duyệt hồ sơ
+  pending --> cancelled: Từ chối / hủy hồ sơ
+  approved --> in_progress: Bắt đầu đào tạo
+  approved --> cancelled: Hủy trước khi học
+  in_progress --> completed: Hoàn thành khóa học
+  in_progress --> cancelled: Dừng học
+  cancelled --> pending: Đăng ký lại [khóa đã published AND còn chỉ tiêu]
+  completed --> [*]
+  note right of cancelled
+    Không được kích hoạt lại nếu khóa học chưa mở
+    hoặc số lượng đăng ký đã đạt giới hạn.
+  end note

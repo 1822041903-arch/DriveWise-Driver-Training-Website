@@ -1,0 +1,50 @@
+flowchart TB
+  subgraph CLIENT[Client - Frontend]
+    UI[React Pages & Components]
+    CTX[AuthContext]
+    HTTP[API Client]
+    UI --> CTX
+    UI --> HTTP
+    CTX --> HTTP
+  end
+
+  subgraph APP[Backend - Express REST API]
+    SEC[Helmet + CORS + JSON Parser]
+    ROUTER[Express Route Matching]
+    PUBLIC[Public Handler: Health / Course Catalog]
+    AUTH[JWT Authentication - protected routes]
+    ROLE[Role Authorization]
+    VALID[Input Validation Middleware]
+    HANDLER[Route Handler + Business Services]
+    MODELS[Mongoose Models]
+    ERR[Central Error Handler]
+    SEC --> ROUTER
+    ROUTER --> PUBLIC
+    ROUTER --> AUTH
+    AUTH --> ROLE
+    ROLE --> VALID
+    VALID --> HANDLER
+    PUBLIC --> MODELS
+    HANDLER --> MODELS
+    MODELS -. Errors .-> ERR
+    HANDLER -. Errors .-> ERR
+  end
+  SERVER[Node server entry]
+  SINGLE[Singleton connection module]
+  DB[(MongoDB)]
+  HTTP -->|Request: HTTP/HTTPS + JSON + Bearer JWT (protected routes)| SEC
+  ERR -.->|Response: JSON status + data/message| HTTP
+  PUBLIC -.->|Response: JSON status + data/message| HTTP
+  HANDLER -.->|Response: JSON status + data/message| HTTP
+  MODELS <--> DB
+  SERVER --> SINGLE
+  SINGLE <--> DB
+
+  subgraph PATTERNS[Design Patterns in the business layer]
+    PROTO[Prototype: clone Course + Lessons]
+    STATE[State: Enrollment lifecycle]
+    STRAT[Strategy: theory/practice scoring]
+  end
+  HANDLER --> PROTO
+  HANDLER --> STATE
+  HANDLER --> STRAT

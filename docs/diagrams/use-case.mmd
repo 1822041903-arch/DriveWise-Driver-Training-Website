@@ -1,0 +1,53 @@
+flowchart TB
+  subgraph ACTORS[Actors]
+    direction LR
+    visitor[Khách truy cập]
+    student[Học viên]
+    instructor[Giảng viên]
+    admin[Quản trị viên]
+  end
+
+  subgraph SYSTEM[Hệ thống DriveWise]
+    direction LR
+    subgraph PUBLIC[Khám phá và tài khoản]
+      UC1([Xem / tìm khóa học])
+      UC2([Đăng ký tài khoản])
+      UC3([Đăng nhập / đăng xuất])
+    end
+    subgraph LEARNER[Chức năng học viên]
+      UC4([Gửi đăng ký khóa học])
+      UC5([Theo dõi hồ sơ đăng ký])
+      UC6([Xem lịch học và kết quả])
+    end
+    subgraph STAFF[Chức năng đào tạo]
+      UC7([Quản lý khóa học])
+      UC8([Quản lý bài học])
+      UC9([Tạo lịch đào tạo])
+      UC10([Duyệt / cập nhật hồ sơ])
+      UC11([Ghi nhận kết quả thi])
+      UC12([Quản lý người dùng])
+    end
+  end
+
+  visitor --> UC1
+  visitor --> UC2
+  visitor --> UC3
+  student --> UC1
+  student --> UC3
+  student --> UC4
+  student --> UC5
+  student --> UC6
+  instructor --> UC3
+  instructor --> UC7
+  instructor --> UC8
+  instructor --> UC9
+  instructor --> UC10
+  instructor --> UC11
+  admin --> UC3
+  admin --> UC7
+  admin --> UC8
+  admin --> UC9
+  admin --> UC10
+  admin --> UC11
+  admin --> UC12
+  UC4 -. "<<include>> đăng nhập" .-> UC3

@@ -1,0 +1,48 @@
+sequenceDiagram
+  actor HV as Học viên
+  participant FE as React Frontend
+  participant API as Express REST API
+  participant AUTH as JWT Auth Middleware
+  participant ROLE as Role Authorization
+  participant VAL as Input Validation
+  participant DB as MongoDB
+
+  HV->>FE: Chọn khóa học và nhấn Đăng ký
+  FE->>API: POST /api/enrollments {courseId, Bearer JWT}
+  API->>AUTH: Xác thực token
+  AUTH->>DB: Tìm User theo token
+  DB-->>AUTH: User / không tồn tại
+  alt Token không hợp lệ hoặc tài khoản không tồn tại
+    AUTH-->>FE: 401 Unauthorized
+    FE-->>HV: Yêu cầu đăng nhập lại
+  else Token hợp lệ
+    AUTH->>ROLE: Kiểm tra vai trò student
+    alt Không đủ quyền
+      ROLE-->>FE: 403 Forbidden
+      FE-->>HV: Thông báo không đủ quyền
+    else Đúng vai trò
+      ROLE->>VAL: Kiểm tra courseId
+      alt courseId thiếu hoặc sai định dạng
+        VAL-->>FE: 400 Bad Request
+        FE-->>HV: Hiển thị lỗi dữ liệu
+      else Dữ liệu hợp lệ
+        VAL->>API: Chuyển tiếp đến Enrollment Handler
+        API->>DB: Tìm khóa học published
+        alt Không tồn tại hoặc chưa mở đăng ký
+          DB-->>FE: 404 Not Found
+          FE-->>HV: Thông báo khóa học không khả dụng
+        else Khóa học đang mở
+          API->>DB: Đếm hồ sơ đang hoạt động và kiểm tra trùng
+          alt Đã đăng ký hoặc đủ chỉ tiêu
+            DB-->>FE: 409 Conflict
+            FE-->>HV: Hiển thị lý do không thể đăng ký
+          else Hợp lệ và còn chỗ
+            API->>DB: Tạo Enrollment trạng thái pending
+            DB-->>API: Enrollment đã lưu
+            API-->>FE: 201 Created + Enrollment
+            FE-->>HV: Hiển thị đăng ký thành công
+          end
+        end
+      end
+    end
+  end

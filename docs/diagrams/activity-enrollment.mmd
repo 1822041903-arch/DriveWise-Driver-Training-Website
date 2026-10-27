@@ -1,0 +1,30 @@
+flowchart TB
+  subgraph STUDENT[Luồng học viên]
+    A([Bắt đầu]) --> B[Mở danh mục khóa học]
+    B --> C[Chọn khóa học]
+    C --> D{Đã đăng nhập?}
+    D -- Chưa --> E[Đăng nhập / tạo tài khoản]
+    E --> F{Thông tin hợp lệ?}
+    F -- Không --> E
+    F -- Có --> G[Quay lại khóa học]
+    D -- Rồi --> G
+    G --> H[Nhấn Đăng ký]
+  end
+  subgraph BACKEND[Luồng Backend]
+    H --> I[Xác thực JWT và vai trò]
+    I --> J{Đủ điều kiện?}
+    J -- Token / quyền lỗi --> K[Trả 401 / 403]
+    J -- Hết chỗ / trùng / khóa đóng --> L[Trả 404 / 409]
+    J -- Đủ điều kiện --> M[Lưu Enrollment = pending]
+    M --> N[Trả 201 và thông báo thành công]
+  end
+  subgraph CENTER[Luồng trung tâm - xử lý bất đồng bộ]
+    N -. Sau đó, khi nhân sự xử lý hồ sơ .-> O[Quản trị viên / giảng viên mở danh sách hồ sơ]
+    O --> P{Quyết định}
+    P -- Duyệt --> Q[Chuyển approved]
+    P -- Từ chối --> R[Chuyển cancelled]
+  end
+  K --> Z([Kết thúc yêu cầu])
+  L --> Z
+  Q --> END([Kết thúc xử lý hồ sơ])
+  R --> END

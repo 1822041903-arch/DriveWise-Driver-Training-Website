@@ -1,0 +1,93 @@
+erDiagram
+  USERS {
+    ObjectId _id PK
+    string fullName
+    string email UK
+    string password
+    string phone
+    string role
+    datetime createdAt
+    datetime updatedAt
+  }
+  COURSES {
+    ObjectId _id PK
+    string code UK
+    string title
+    string category
+    string type
+    string description
+    int durationWeeks
+    decimal tuition
+    int seatLimit
+    string imageUrl
+    string learningOutcomes
+    ObjectId instructor FK
+    string status
+    datetime createdAt
+    datetime updatedAt
+  }
+  ENROLLMENTS {
+    ObjectId _id PK
+    ObjectId student FK
+    ObjectId course FK
+    datetime enrolledAt
+    string status
+    string note
+    decimal theoryHoursCompleted
+    decimal practiceHoursCompleted
+    decimal practiceKmCompleted
+    datetime createdAt
+    datetime updatedAt
+  }
+  LESSONS {
+    ObjectId _id PK
+    ObjectId course FK
+    string title
+    string summary
+    string lessonType
+    int order
+    string videoUrl
+    string materialsUrl
+    datetime createdAt
+    datetime updatedAt
+  }
+  SCHEDULES {
+    ObjectId _id PK
+    ObjectId course FK
+    ObjectId lessonId FK "nullable"
+    ObjectId instructor FK
+    ObjectId student FK "nullable"
+    datetime startsAt
+    datetime endsAt
+    string location
+    string sessionType
+    string status
+    datetime createdAt
+    datetime updatedAt
+  }
+  EXAM_RESULTS {
+    ObjectId _id PK
+    ObjectId student FK
+    ObjectId course FK
+    ObjectId assessedBy FK
+    string examType
+    decimal score
+    decimal passingScore
+    string scoringStrategy
+    boolean passed
+    string feedback
+    datetime takenAt
+    datetime createdAt
+    datetime updatedAt
+  }
+  USERS o|--o{ COURSES : teaches
+  USERS ||--o{ ENROLLMENTS : submits
+  COURSES ||--o{ ENROLLMENTS : receives
+  COURSES ||--o{ LESSONS : contains
+  COURSES ||--o{ SCHEDULES : has
+  LESSONS o|--o{ SCHEDULES : taught_in
+  USERS ||--o{ SCHEDULES : instructs
+  USERS o|--o{ SCHEDULES : attends
+  USERS ||--o{ EXAM_RESULTS : earns
+  COURSES ||--o{ EXAM_RESULTS : contains
+  USERS ||--o{ EXAM_RESULTS : assesses

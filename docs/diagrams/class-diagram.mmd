@@ -1,0 +1,164 @@
+classDiagram
+  direction LR
+  class User {
+    +ObjectId id
+    +String fullName
+    +String email
+    +Role role
+    +register()
+    +login()
+  }
+  class Course {
+    +ObjectId id
+    +String code
+    +String title
+    +Category category
+    +String status
+    +publish()
+    +updateDetails()
+  }
+  class Enrollment {
+    +ObjectId id
+    +Date enrolledAt
+    +EnrollmentStatus status
+    +Number theoryHoursCompleted
+    +Number practiceHoursCompleted
+    +Number practiceKmCompleted
+  }
+  class Lesson {
+    +ObjectId id
+    +String title
+    +LessonType lessonType
+    +Number order
+  }
+  class Schedule {
+    +ObjectId id
+    +ObjectId lessonId nullable
+    +Date startsAt
+    +Date endsAt
+    +String location
+    +String status
+  }
+  class ExamResult {
+    +ObjectId id
+    +String examType
+    +Number score
+    +Number passingScore
+    +String scoringStrategy
+    +Boolean passed
+  }
+
+  class CourseRoutes {
+    +createCourse()
+    +cloneCourse()
+    +updateCourse()
+    +deleteCourse()
+  }
+  class EnrollmentRoutes {
+    +createEnrollment()
+    +updateStatus()
+    +updateProgress()
+  }
+  class LessonRoutes {
+    +listByCourse()
+    +createLesson()
+  }
+  class ScheduleRoutes {
+    +listSchedules()
+    +createSchedule()
+  }
+  class ExamResultRoutes {
+    +listMyResults()
+    +createResult()
+  }
+  class UserRoutes {
+    +listUsers()
+    +updateUser()
+  }
+  class AuthRoutes {
+    +register()
+    +login()
+    +getCurrentUser()
+  }
+
+  class CoursePrototype {
+    <<Prototype>>
+    +buildCoursePrototype(source, overrides)
+    +buildLessonPrototypes(lessons, targetCourseId)
+  }
+  class EnrollmentState {
+    <<State>>
+    +transitionTo(next, context)
+  }
+  class PendingState {
+    +transitionTo(next, context)
+  }
+  class ApprovedState {
+    +transitionTo(next, context)
+  }
+  class InProgressState {
+    +transitionTo(next, context)
+  }
+  class CompletedState
+  class CancelledState {
+    +transitionTo(next, context)
+  }
+  class ExamScoringStrategy {
+    <<Strategy>>
+    +evaluate(score)
+  }
+  class TheoryExamStrategy {
+    +passingScore = 50
+  }
+  class PracticeExamStrategy {
+    +passingScore = 70
+  }
+  class AuthMiddleware {
+    +requireAuth(req, res, next)
+  }
+  class RoleAuthorization {
+    +allowRoles(roles)
+  }
+  class EnrollmentInputValidation {
+    +validateEnrollmentRequest(req, res, next)
+  }
+  class MongoConnection {
+    <<Singleton>>
+    -connectionPromise
+    +connectDB()
+  }
+
+  User "0..1" --> "0..*" Course : phụ trách
+  User "1" --> "0..*" Enrollment : học viên
+  Course "1" --> "0..*" Enrollment : có hồ sơ
+  Course "1" *-- "0..*" Lesson : chương trình học
+  Course "1" --> "0..*" Schedule : lịch đào tạo
+  Lesson "0..1" <-- "0..*" Schedule : lessonId
+  User "1" --> "0..*" Schedule : giảng viên
+  User "0..1" <-- "0..*" Schedule : học viên được chỉ định
+  User "1" --> "0..*" ExamResult : học viên dự thi
+  Course "1" --> "0..*" ExamResult : kết quả
+  User "1" --> "0..*" ExamResult : người đánh giá
+
+  CourseRoutes ..> Course : CRUD
+  CourseRoutes ..> CoursePrototype : nhân bản khóa học
+  CoursePrototype ..> Lesson : sao chép bài học
+  EnrollmentRoutes ..> Enrollment : lưu trạng thái
+  EnrollmentRoutes ..> EnrollmentState : yêu cầu chuyển trạng thái
+  PendingState --|> EnrollmentState
+  ApprovedState --|> EnrollmentState
+  InProgressState --|> EnrollmentState
+  CompletedState --|> EnrollmentState
+  CancelledState --|> EnrollmentState
+  ExamResultRoutes ..> ExamScoringStrategy : chọn chiến lược
+  TheoryExamStrategy --|> ExamScoringStrategy
+  PracticeExamStrategy --|> ExamScoringStrategy
+  AuthRoutes ..> User : xác thực tài khoản
+  UserRoutes ..> User : quản lý tài khoản
+  LessonRoutes ..> Lesson : quản lý bài học
+  ScheduleRoutes ..> Schedule : quản lý lịch
+  AuthMiddleware ..> User : tra cứu tài khoản
+  EnrollmentRoutes ..> AuthMiddleware : requireAuth
+  EnrollmentRoutes ..> RoleAuthorization : allowRoles
+  EnrollmentRoutes ..> EnrollmentInputValidation : validate request
+  MongoConnection ..> Course : kết nối DB dùng chung
